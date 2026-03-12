@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CoWork — Book Your Space</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #161619;
+    --surface2: #1e1e23;
+    --border: #2a2a32;
+    --accent: #7b61ff;
+    --accent2: #7b61ff;
+    --text: #f0f0f5;
+    --muted: #6b6b7a;
+    --danger: #ff5c5c;
+    --success: #7b61ff;
+    --warning: #f5c842;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* NAV */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 2.5rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(13,13,15,0.92); backdrop-filter: blur(16px); z-index: 100; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .nav-actions { display: flex; gap: 0.8rem; align-items: center; }
+  .nav-user { font-size: 0.85rem; color: var(--muted); }
+  .nav-user strong { color: var(--text); }
+
+  /* BUTTONS */
+  .btn { padding: 0.55rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: #0d0d0f; }
+  .btn-primary:hover { background: #d8ff55; transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); font-size: 0.8rem; padding: 0.35rem 0.8rem; }
+  .btn-danger:hover { background: var(--danger); color: white; }
+  .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.82rem; }
+
+  /* HERO */
+  .hero { padding: 5rem 2.5rem 3rem; max-width: 1100px; margin: 0 auto; }
+  .hero-eyebrow { font-size: 0.78rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 800; line-height: 1.05; letter-spacing: -1.5px; margin-bottom: 1rem; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 1rem; max-width: 480px; line-height: 1.7; }
+
+  /* MAIN LAYOUT */
+  .app-container { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem 4rem; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0.4rem; margin-bottom: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .tab { padding: 0.75rem 1.4rem; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text); }
+
+  /* FILTERS */
+  .filters { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem; }
+  .filter-chip { padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size: 0.82rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(200,245,66,0.07); }
+  .filter-chip:hover { border-color: var(--text); color: var(--text); }
+
+  /* SEATS GRID */
+  .seats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+  .seat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; }
+  .seat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background 0.2s; }
+  .seat-card:hover { border-color: rgba(200,245,66,0.3); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .seat-card:hover::before { background: var(--accent); }
+  .seat-card.selected { border-color: var(--accent); background: rgba(200,245,66,0.04); }
+  .seat-card.selected::before { background: var(--accent); }
+
+  .seat-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.8rem; }
+  .seat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 0.4rem; }
+  .seat-icon.hot_desk { background: rgba(200,245,66,0.1); }
+  .seat-icon.private_office { background: rgba(123,97,255,0.15); }
+  .seat-icon.meeting_room { background: rgba(66,245,161,0.1); }
+  .seat-icon.conference_hall { background: rgba(245,200,66,0.1); }
+
+  .tier-badge { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tier-badge.basic { background: rgba(107,107,122,0.2); color: var(--muted); }
+  .tier-badge.premium { background: rgba(123,97,255,0.2); color: #a78bfa; }
+
+  .seat-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .seat-type { font-size: 0.8rem; color: var(--muted); text-transform: capitalize; margin-bottom: 0.8rem; }
+  .seat-amenities { font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 1rem; }
+
+  .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .price-item { background: var(--surface2); border-radius: 6px; padding: 0.4rem 0.6rem; }
+  .price-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  .price-value { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+
+  .seat-capacity { display: flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: var(--muted); margin-top: 0.8rem; }
+
+  /* BOOKING PANEL */
+  .booking-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-top: 2.5rem; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .booking-panel h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .seats-grid { grid-template-columns: 1fr; } }
+
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+  input, select { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.9rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border 0.2s; }
+  input:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  .booking-type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+  .booking-type-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .booking-type-btn.active { border-color: var(--accent); background: rgba(200,245,66,0.07); color: var(--accent); }
+  .booking-type-btn .type-name { font-size: 0.85rem; font-weight: 600; }
+  .booking-type-btn .type-price { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .booking-type-btn.active .type-price { color: rgba(200,245,66,0.6); }
+
+  .price-summary { background: rgba(200,245,66,0.05); border: 1px solid rgba(200,245,66,0.15); border-radius: 10px; padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; }
+  .price-summary .label { font-size: 0.85rem; color: var(--muted); }
+  .price-summary .total { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+
+  /* MY BOOKINGS */
+  .booking-list { display: flex; flex-direction: column; gap: 1rem; }
+  .booking-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.3rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .booking-info h4 { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .booking-meta { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.4rem; }
+  .booking-meta span { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
+  .status-badge { padding: 0.2rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; }
+  .status-badge.confirmed { background: rgba(66,245,161,0.12); color: var(--success); }
+  .status-badge.cancelled { background: rgba(255,92,92,0.12); color: var(--danger); }
+  .status-badge.completed { background: rgba(107,107,122,0.2); color: var(--muted); }
+  .booking-price { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+  /* AUTH MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 420px; animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+  .modal h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.4rem; }
+  .modal p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.8rem; }
+  .modal .form-group { margin-bottom: 1rem; }
+  .modal-toggle { text-align: center; margin-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+  .modal-toggle a { color: var(--accent); cursor: pointer; text-decoration: none; }
+
+  /* ALERTS */
+  .alert { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; }
+  .alert-error { background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.2); color: #ff8f8f; }
+  .alert-success { background: rgba(66,245,161,0.1); border: 1px solid rgba(66,245,161,0.2); color: var(--success); }
+
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-size: 0.9rem; }
+
+  .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
+  .dot-anim::after { content: '...'; animation: dots 1.2s infinite; }
+  @keyframes dots { 0%,100%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">co<span>work</span></div>
+  <div class="nav-actions">
+    <span class="nav-user hidden" id="navUser"></span>
+    <button class="btn btn-ghost btn-sm hidden" id="logoutBtn" onclick="logout()">Sign out</button>
+    <button class="btn btn-primary btn-sm" id="loginBtn" onclick="openAuth('login')">Sign in</button>
+    <button class="btn btn-ghost btn-sm" id="registerBtn" onclick="openAuth('register')">Register</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Co-Working Space</div>
+  <h1>Your perfect<br/><em>workspace</em><br/>awaits.</h1>
+  <p>Book hot desks, private offices, meeting rooms, and conference halls — by the hour, day, week, or month.</p>
+</div>
+
+<!-- APP -->
+<div class="app-container">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('browse')">Browse Spaces</div>
+    <div class="tab" onclick="switchTab('bookings')">My Bookings</div>
+  </div>
+
+  <!-- BROWSE TAB -->
+  <div id="browseTab">
+    <div class="filters" id="filters">
+      <button class="filter-chip active" data-type="" onclick="filterSeats(this,'')">All Types</button>
+      <button class="filter-chip" data-type="hot_desk" onclick="filterSeats(this,'hot_desk')">🪑 Hot Desk</button>
+      <button class="filter-chip" data-type="private_office" onclick="filterSeats(this,'private_office')">🏢 Private Office</button>
+      <button class="filter-chip" data-type="meeting_room" onclick="filterSeats(this,'meeting_room')">📋 Meeting Room</button>
+      <button class="filter-chip" data-type="conference_hall" onclick="filterSeats(this,'conference_hall')">🎤 Conference Hall</button>
+      <button class="filter-chip" data-tier="basic" onclick="filterTier(this,'basic')">Basic</button>
+      <button class="filter-chip" data-tier="premium" onclick="filterTier(this,'premium')">✨ Premium</button>
+    </div>
+
+    <div class="seats-grid" id="seatsGrid">
+      <div class="loading"><span class="dot-anim">Loading spaces</span></div>
+    </div>
+
+    <!-- BOOKING PANEL -->
+    <div class="booking-panel hidden" id="bookingPanel">
+      <h3>Book: <span id="bookingTitle"></span></h3>
+      <div id="bookingAlert"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <label style="display:block;margin-bottom:0.6rem;">Booking Duration</label>
+        <div class="booking-type-grid" id="bookingTypeGrid"></div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Start Date & Time</label>
+          <input type="datetime-local" id="startTime" oninput="updatePrice()" />
+        </div>
+        <div class="form-group">
+          <label>End Date & Time</label>
+          <input type="datetime-local" id="endTime" oninput="updatePrice()" />
+        </div>
+      </div>
+
+      <div class="price-summary" style="margin:1.2rem 0;">
+        <div>
+          <div class="label">Estimated Total</div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;" id="priceBreakdown"></div>
+        </div>
+        <div class="total" id="priceTotal">—</div>
+      </div>
+
+      <div style="display:flex;gap:0.8rem;">
+        <button class="btn btn-primary" onclick="submitBooking()">Confirm Booking</button>
+        <button class="btn btn-ghost" onclick="clearSelection()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKINGS TAB -->
+  <div id="bookingsTab" class="hidden">
+    <div id="bookingsList"><div class="loading"><span class="dot-anim">Loading</span></div></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay hidden" id="authOverlay">
+  <div class="modal">
+    <h2 id="authTitle">Welcome back</h2>
+    <p id="authSubtitle">Sign in to your account to book spaces.</p>
+    <div id="authAlert"></div>
+    <div class="form-group" id="nameGroup" style="display:none;margin-bottom:1rem;">
+      <label>Full Name</label>
+      <input type="text" id="authName" placeholder="Jane Doe" />
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Email Address</label>
+      <input type="email" id="authEmail" placeholder="you@example.com" />
+    </div>
+    <div class="form-group" style="margin-bottom:1.5rem;">
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••" />
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="submitAuth()">Continue</button>
+    <div class="modal-toggle">
+      <span id="authToggleText"></span>
+      <a onclick="toggleAuthMode()" id="authToggleLink"></a>
+    </div>
+    <div style="text-align:center;margin-top:1rem;">
+      <a style="font-size:0.82rem;color:var(--muted);cursor:pointer;" onclick="closeAuth()">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('cw_token');
+let user = JSON.parse(localStorage.getItem('cw_user') || 'null');
+let allSeats = [];
+let selectedSeat = null;
+let selectedBookingType = 'hourly';
+let activeTypeFilter = '';
+let activeTierFilter = '';
+let authMode = 'login';
+
+// --- ROOM ICONS ---
+const ICONS = { hot_desk:'🪑', private_office:'🏢', meeting_room:'📋', conference_hall:'🎤' };
+
+// --- INIT ---
+window.addEventListener('DOMContentLoaded', () => {
+  if (token && user) showLoggedIn();
+  loadSeats();
+  setDefaultTimes();
+});
+
+function setDefaultTimes() {
+  const now = new Date(); now.setMinutes(0,0,0);
+  const later = new Date(now); later.setHours(later.getHours() + 2);
+  document.getElementById('startTime').value = toLocal(now);
+  document.getElementById('endTime').value = toLocal(later);
+}
+
+function toLocal(d) {
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+
+// --- AUTH UI ---
+function showLoggedIn() {
+  document.getElementById('loginBtn').classList.add('hidden');
+  document.getElementById('registerBtn').classList.add('hidden');
+  document.getElementById('logoutBtn').classList.remove('hidden');
+  const navUser = document.getElementById('navUser');
+  navUser.classList.remove('hidden');
+  navUser.innerHTML = `Hey, <strong>${user.name.split(' ')[0]}</strong>`;
+}
+
+function logout() {
+  token = null; user = null;
+  localStorage.removeItem('cw_token'); localStorage.removeItem('cw_user');
+  document.getElementById('loginBtn').classList.remove('hidden');
+  document.getElementById('registerBtn').classList.remove('hidden');
+  document.getElementById('logoutBtn').classList.add('hidden');
+  document.getElementById('navUser').classList.add('hidden');
+  clearSelection();
+}
+
+function openAuth(mode) {
+  authMode = mode;
+  document.getElementById('authOverlay').classList.remove('hidden');
+  updateAuthUI();
+  document.getElementById('authAlert').innerHTML = '';
+}
+
+function closeAuth() { document.getElementById('authOverlay').classList.add('hidden'); }
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  updateAuthUI();
+  document.getElementById('authAlert').innerHTML = '';
+}
+
+function updateAuthUI() {
+  const isReg = authMode === 'register';
+  document.getElementById('authTitle').textContent = isReg ? 'Create account' : 'Welcome back';
+  document.getElementById('authSubtitle').textContent = isReg ? 'Start booking your perfect workspace.' : 'Sign in to your account to book spaces.';
+  document.getElementById('nameGroup').style.display = isReg ? 'flex' : 'none';
+  document.getElementById('authToggleText').textContent = isReg ? 'Already have an account? ' : "Don't have an account? ";
+  document.getElementById('authToggleLink').textContent = isReg ? 'Sign in' : 'Register';
+}
+
+async function submitAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const name = document.getElementById('authName').value.trim();
+  const alertEl = document.getElementById('authAlert');
+
+  if (!email || !password || (authMode==='register' && !name)) {
+    alertEl.innerHTML = '<div class="alert alert-error">Please fill in all fields.</div>'; return;
+  }
+
+  const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+  const body = authMode === 'login' ? {email, password} : {name, email, password};
+
+  try {
+    const res = await fetch(API + endpoint, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Authentication failed');
+    token = data.access_token; user = data.user;
+    localStorage.setItem('cw_token', token);
+    localStorage.setItem('cw_user', JSON.stringify(user));
+    showLoggedIn(); closeAuth();
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+// --- SEATS ---
+async function loadSeats() {
+  try {
+    const res = await fetch(API + '/api/seats/');
+    allSeats = await res.json();
+    renderSeats();
+  } catch(e) {
+    document.getElementById('seatsGrid').innerHTML = '<div class="alert alert-error">Failed to load seats.</div>';
+  }
+}
+
+function filterSeats(el, type) {
+  activeTypeFilter = type;
+  document.querySelectorAll('[data-type]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderSeats();
+}
+
+function filterTier(el, tier) {
+  activeTierFilter = activeTierFilter === tier ? '' : tier;
+  document.querySelectorAll('[data-tier]').forEach(c => c.classList.remove('active'));
+  if (activeTierFilter) el.classList.add('active');
+  renderSeats();
+}
+
+function renderSeats() {
+  const grid = document.getElementById('seatsGrid');
+  let seats = allSeats;
+  if (activeTypeFilter) seats = seats.filter(s => s.room_type === activeTypeFilter);
+  if (activeTierFilter) seats = seats.filter(s => s.tier === activeTierFilter);
+
+  if (!seats.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No spaces match your filters.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = seats.map(s => `
+    <div class="seat-card ${selectedSeat?.id===s.id?'selected':''}" onclick="selectSeat(${s.id})">
+      <div class="seat-header">
+        <div class="seat-icon ${s.room_type}">${ICONS[s.room_type]||'📍'}</div>
+        <span class="tier-badge ${s.tier}">${s.tier}</span>
+      </div>
+      <div class="seat-name">${s.name}</div>
+      <div class="seat-type">${s.room_type.replace(/_/g,' ')}</div>
+      <div class="seat-amenities">${s.amenities}</div>
+      <div class="price-grid">
+        <div class="price-item"><div class="price-label">Hourly</div><div class="price-value">₹${s.price_hourly}</div></div>
+        <div class="price-item"><div class="price-label">Daily</div><div class="price-value">₹${s.price_daily}</div></div>
+        <div class="price-item"><div class="price-label">Weekly</div><div class="price-value">₹${s.price_weekly}</div></div>
+        <div class="price-item"><div class="price-label">Monthly</div><div class="price-value">₹${s.price_monthly}</div></div>
+      </div>
+      <div class="seat-capacity">👥 Capacity: ${s.capacity}</div>
+    </div>
+  `).join('');
+}
+
+function selectSeat(id) {
+  if (!token) { openAuth('login'); return; }
+  selectedSeat = allSeats.find(s => s.id === id);
+  renderSeats();
+  showBookingPanel();
+}
+
+function clearSelection() {
+  selectedSeat = null;
+  renderSeats();
+  document.getElementById('bookingPanel').classList.add('hidden');
+}
+
+function showBookingPanel() {
+  const panel = document.getElementById('bookingPanel');
+  panel.classList.remove('hidden');
+  document.getElementById('bookingTitle').textContent = selectedSeat.name;
+  document.getElementById('bookingAlert').innerHTML = '';
+  renderBookingTypes();
+  updatePrice();
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderBookingTypes() {
+  const types = [
+    { key:'hourly', label:'Hourly', price: selectedSeat.price_hourly },
+    { key:'daily', label:'Daily', price: selectedSeat.price_daily },
+    { key:'weekly', label:'Weekly', price: selectedSeat.price_weekly },
+    { key:'monthly', label:'Monthly', price: selectedSeat.price_monthly },
+  ];
+  document.getElementById('bookingTypeGrid').innerHTML = types.map(t => `
+    <div class="booking-type-btn ${selectedBookingType===t.key?'active':''}" onclick="setBookingType('${t.key}')">
+      <div class="type-name">${t.label}</div>
+      <div class="type-price">₹${t.price}/unit</div>
+    </div>
+  `).join('');
+}
+
+function setBookingType(type) {
+  selectedBookingType = type;
+  const DURATIONS = { hourly:2, daily:24, weekly:168, monthly:720 };
+  const start = new Date(document.getElementById('startTime').value);
+  const end = new Date(start.getTime() + DURATIONS[type] * 3600000);
+  document.getElementById('endTime').value = toLocal(end);
+  renderBookingTypes();
+  updatePrice();
+}
+
+function updatePrice() {
+  if (!selectedSeat) return;
+  const start = new Date(document.getElementById('startTime').value);
+  const end = new Date(document.getElementById('endTime').value);
+  if (!start || !end || start >= end) { document.getElementById('priceTotal').textContent = '—'; return; }
+
+  const prices = { hourly: selectedSeat.price_hourly, daily: selectedSeat.price_daily, weekly: selectedSeat.price_weekly, monthly: selectedSeat.price_monthly };
+  const durations = { hourly: 1, daily: 24, weekly: 168, monthly: 720 };
+  const hours = (end - start) / 3600000;
+  const units = Math.max(1, Math.round(hours / durations[selectedBookingType]));
+  const total = (prices[selectedBookingType] * units).toFixed(2);
+  document.getElementById('priceTotal').textContent = `₹${total}`;
+  document.getElementById('priceBreakdown').textContent = `${units} ${selectedBookingType} unit${units>1?'s':''} × ₹${prices[selectedBookingType]}`;
+}
+
+async function submitBooking() {
+  const alertEl = document.getElementById('bookingAlert');
+  const start = document.getElementById('startTime').value;
+  const end = document.getElementById('endTime').value;
+  if (!start || !end) { alertEl.innerHTML='<div class="alert alert-error">Please set start and end times.</div>'; return; }
+  if (new Date(start) >= new Date(end)) { alertEl.innerHTML='<div class="alert alert-error">End time must be after start time.</div>'; return; }
+
+  try {
+    const res = await fetch(API + '/api/bookings/', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        seat_id: selectedSeat.id,
+        booking_type: selectedBookingType,
+        start_time: new Date(start).toISOString(),
+        end_time: new Date(end).toISOString()
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Booking failed');
+    alertEl.innerHTML = `<div class="alert alert-success">✅ Booking confirmed! Total: ₹${data.total_price}</div>`;
+    setTimeout(() => clearSelection(), 2500);
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+  }
+}
+
+// --- BOOKINGS TAB ---
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='browse'?0:1)===i));
+  document.getElementById('browseTab').classList.toggle('hidden', tab !== 'browse');
+  document.getElementById('bookingsTab').classList.toggle('hidden', tab !== 'bookings');
+  if (tab === 'bookings') loadMyBookings();
+}
+
+async function loadMyBookings() {
+  const el = document.getElementById('bookingsList');
+  if (!token) { el.innerHTML = '<div class="empty-state"><div class="icon">🔒</div><p>Please sign in to view your bookings.</p></div>'; return; }
+  el.innerHTML = '<div class="loading"><span class="dot-anim">Loading bookings</span></div>';
+  try {
+    const res = await fetch(API + '/api/bookings/', { headers: {'Authorization': `Bearer ${token}`} });
+    const data = await res.json();
+    if (!data.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No bookings yet. Browse spaces to get started!</p></div>'; return; }
+    el.innerHTML = '<div class="booking-list">' + data.map(b => `
+      <div class="booking-item">
+        <div class="booking-info">
+          <h4>${b.seat_name || 'Space'} <span class="status-badge ${b.status}">${b.status}</span></h4>
+          <div class="booking-meta">
+            <span>🏢 ${(b.room_type||'').replace(/_/g,' ')}</span>
+            <span>⏱ ${b.booking_type}</span>
+            <span>📅 ${new Date(b.start_time).toLocaleString()} → ${new Date(b.end_time).toLocaleString()}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem;">
+          <div class="booking-price">₹${b.total_price}</div>
+          ${b.status==='confirmed' ? `<button class="btn btn-danger" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+        </div>
+      </div>
+    `).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = '<div class="alert alert-error">Failed to load bookings.</div>';
+  }
+}
+
+async function cancelBooking(id) {
+  if (!confirm('Cancel this booking?')) return;
+  try {
+    const res = await fetch(API + `/api/bookings/${id}`, {
+      method: 'DELETE', headers: {'Authorization': `Bearer ${token}`}
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail); }
+    loadMyBookings();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+document.getElementById('authOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeAuth(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeAuth(); });
+</script>
+</body>
+</html>
